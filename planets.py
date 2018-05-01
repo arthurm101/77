@@ -1,38 +1,290 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from astropy.io import ascii
+
+G = 6.674e-11
+AU = (149.6e6 * 1000) # Astronomical unit in metres
+#code that reads in the data from the files
+data1 = ascii.read('table3.dat', readme = 'ReadMe')
+data2 = ascii.read('table5.dat', readme = 'ReadMe')
+
+#first step we need to find the period of the binary system
+#we do this by plotting the radial velocities and then we will zoom in on
+#a region and see if we can deduce the period from it.
+#once we have the period all we need next will be to find out the mass and average
+#separation
+
+#we can find ratio of mass by taking the ratio of radial velocities
+
+
+#assigning the values of radial velocity to these variables below
+#as well as time, one for data set 1
+#and another one for data set 2
+
+#data set 1
+rad_vel1 = data1['RV1']
+rad_vel2 = data1['RV2']
+time = data1['HJD']
+
+#data set 2
+rad_vel11 = data2['RV1']
+rad_vel22 = data2['RV2']
+time1 = data2['HJD']
+
+#code that will index our radial velocity so that we can zoom in on a region of interest
+#in this case this will find for data set 1 the radial velocity of RV1 from when
+#time is less than 54500
+
+#initializer
+i = 0
+#list that will hold the index
+time_segment = []
+
+#while loop that loops through the condition required in this case that time[i] < 54500
+while i < len(time):
+	if time[i] < 54500:
+		time_segment.append(i)
+	i+=1
+
+#assigning the value of index to the length of the list this will be used below to
+#only get the time and radial velocity values that we want
+index = len(time_segment)
+
+
+#code that cuts away unwanted values and only focuses on the region of interest
+rv1_segment = rad_vel1[:index]
+time_adjusted = time[:index]
+
+
+#this code is an exact copy of the above just that now we are looking at a different range
+#and applying it to a different variable rad_vel2
+
+#initializer
+i = 0
+#list that will hold the index
+time_segment1 = []
+
+#while loop that loops through the condition required in this case that time[i] < 54500
+while i < len(time):
+	if time[i] > 56000 and time[i] < 57000:
+		time_segment1.append(i)
+	i+=1
+start = time_segment1[0]
+end = time_segment1[-1]
+
+
+zoomRV1 = []
+i=0
+while i < len(time):
+	if time[i] > 56200 and time[i] < 56260:
+		zoomRV1.append(i)
+	i+=1
+zoomstart = zoomRV1[0]
+zoomend = zoomRV1[-1]
+
+RV1_zoom = rad_vel1[zoomstart : zoomend]
+timezoom = time[zoomstart : zoomend]
+
+
+zoomRV2 = []
+i=0
+while i < len(time):
+	if time[i] > 56200 and time[i] < 56300:
+		zoomRV2.append(i)
+	i+=1
+zoomstart2 = zoomRV2[0]
+zoomend2 = zoomRV2[-1]
+
+RV2_zoom = rad_vel2[zoomstart2 : zoomend2]
+tprime = time[zoomstart2 : zoomend2]
+
+rv2_segment = rad_vel2[start:end]
+rv1_segment2 = rad_vel1[start:end]
+time_seg = time[start:end]
+
+#this code block plots the entirety of the data from data set 1
+plt.title('Plot of the entire data set for data1')
+plt.plot(time, rad_vel1,'.', label = 'Radial Velocity 1', color = 'blue')
+plt.plot(time, rad_vel2,'.', label = 'Radial Velocity 2', color = 'red')
+plt.xlabel('Time (days)')
+plt.ylabel('Radial Velocity (km/s)')
+plt.legend()
+plt.savefig('Dataset1.png')
+plt.show()
+
+
+#code that plots the zoomed in region for radial velocity 1
+plt.figure()
+plt.title('Zoomed in region for RV1')
+plt.scatter(time_adjusted, rv1_segment, c = 'blue')
+plt.xlabel('Time (days)')
+plt.ylabel('Radial Velocity (km/s)')
+plt.show()
+
+plt.figure()
+
+plt.title('Zoomed in region for RV1')
+plt.scatter(time_seg, rv1_segment2, c = 'blue')
+plt.xlabel('Time (days)')
+plt.ylabel('Radial Velocity (km/s)')
+plt.savefig('Radvel1.png')
+plt.show()
+
+
+plt.figure()
+
+#final code that plots the zoomed in region for radial velocity 1
+plt.title('Zoomed in region for RV1')
+plt.scatter(timezoom, RV1_zoom, c = 'blue')
+plt.xlabel('Time (days)')
+plt.ylabel('Radial Velocity (km/s)')
+plt.savefig('Rad_vel1.png')
+plt.show()
+
+
+plt.figure()
+
+plt.title('Zoomed in region for RV2')
+plt.scatter(time_seg, rv2_segment, c = 'red')
+plt.xlabel('Time (days)')
+plt.ylabel('Radial Velocity (km/s)')
+plt.savefig('Radvel2.png')
+plt.show()
+
+plt.figure()
+
+plt.title('Zoomed in region for RV2')
+plt.scatter(tprime, RV2_zoom, c = 'red')
+plt.xlabel('Time (days)')
+plt.ylabel('Radial Velocity (km/s)')
+plt.xlim(min(tprime), max(tprime))
+plt.savefig('Rad_vel2.png')
+plt.show()
+
+#from this plot and other zoomed in regions we can calculate the orbital period in days by #looking for one period of a sine wave
+
+
+plt.figure()
+
+#this code block plots the entirety of the data from data set 2
+plt.title('Data from dataset 2')
+plt.scatter(time1, rad_vel11, c = 'blue')
+plt.scatter(time1, rad_vel22, c = 'red')
+plt.xlabel('Time (days)')
+plt.ylabel('Radial Velocity')
+plt.show()
+
+
+###
+#from the plots above we are able to infer that the orbital period for star 1 is of order #35 days +/- 2 days
+#and for the second object/star, we can infer that the period is about 35 days as well.
+###
+
+
+####
+#code blocks that calculate astrophysical quantities of interest.
+#these are going to include mass, period, semi-major axis
+####
+
+period = 35 * 86400 #in seconds
+print()
+
+#function that calculates the distance away from center of mass
+def separation(velocity, period):
+    rCOM = (period * velocity)/(2 * np.pi)
+    return rCOM
+
+#assigning variables to quantities we need
+
+#this first one is velocity of object 1
+v1 = ((max(RV1_zoom)-min(RV1_zoom))*1000)/2
+
+#assigning separation of object 1 from center of mass
+a1 = separation(v1, period)
+
+#assigning the value of velocity for object 2
+v2 = ((max(RV2_zoom)-min(RV2_zoom))*1000)/2
+
+#assigning the value of separation from center of mass from object 2
+a2 = separation(v2, period)
+
+#calculating the total separation
+a = a1+a2
+
+print('Total separation is: ', a, ' meters or ', a/(1.5e11), ' AU')
+
+#keplars third law to solve for mass if we are given period and separation
+def keplar(period, a):
+    numerator = (4 * np.pi**2 * a**3)
+    denom = G * period**2
+    Mtot = numerator/denom
+    return Mtot
+
+#assigning the combined mass of the system
+Mtot = keplar(period, a)
+
+print('Total mass of the system is: ', Mtot, 'kg')
+
+#functions that calculate the mass for each individual object
+def Mass2(v1, v2, Mtot):
+    M2 = (v1 * Mtot)/ (v1+v2)
+    return M2
+
+def Mass1(v1, v2, Mtot):
+    M1 = (v2*Mtot)/(v2+v1)
+    return M1
+
+#assinging the mass for each individual object to their respective variable
+M1 = Mass1(v1, v2, Mtot)
+M2 = Mass2(v1, v2, Mtot)
+
+#displaying the results onto the screen
+print('Mass of object 1 is: ', M1, 'kg')
+print('Mass of object 2 is: ', M2, 'kg')
+print()
+
+
+
+
+
+
+
+
+
+'''
+BREAK IN CODE ******************************************************************************
+
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
 import numpy
 import math
 import pylab
 import matplotlib.animation as animation
-from matplotlib.font_manager import FontProperties
 import matplotlib.pyplot as plt
 import numpy as np
 
-G = 6.67428e-11 # Newton's gravitational constant
-AU = (149.6e6 * 1000) # Astronomical unit in metres
-timestep = 24 * 3600 # One day in seconds (timestep for the simulation)
+# One day in seconds (timestep for the simulation)
+timestep = 24 * 3600
 
 class planet(object):
-    """
-    Planet class.
-    Contains information about the planet's
-    current position, velocity and mass
-    and other general information.
-    """
-
     def __init__(self):
         self.px = 0.0
         self.py = 0.0
         self.vx = 0.0
         self.vy = 0.0
-        self.mass = None
-        self.color = None
-        self.size = None
-        self.name = None
-
     def compute_force(self, others):
-        """
-        Compute the total exerted force on the
-        body at the current moment.
-        """
         self.total_fx = self.total_fy = 0.0
         for other in others:
             # Compute the distance of the other body.
@@ -55,20 +307,12 @@ class planet(object):
             self.total_fy += fy
 
     def update_position(self):
-        """
-        Update particle velocity and position based on the
-        current exterted total force on the body.
-        """
         self.vx += self.total_fx / self.mass * timestep
         self.vy += self.total_fy / self.mass * timestep
         self.px += self.vx * timestep
         self.py += self.vy * timestep
 
 def animate(i, bodies, lines):
-    """
-    Animation function. Updates the
-    plot on each interation.
-    """
     for ind, body in enumerate(bodies):
         body.compute_force(numpy.delete(bodies, ind))
     for body in bodies:
@@ -78,38 +322,35 @@ def animate(i, bodies, lines):
     return lines
 
 def main():
-    Sun = planet() # Instance of planet Sun
-    Earth = planet() # Instance of planet Earth
-    Venus = planet() # Instance of planet Venus
+    body1 = planet()
+    body2 = planet()
 
-    Sun.mass = 1.98892 * 10 ** 30
-    Sun.color = 'y'
-    Sun.size = 40
-    Sun.name = 'Sun'
+	#BODY1
+    body1.mass =    M1     #5.9742 * 10 ** 24
+    body1.px =  -a1  #-1 * AU
+    body1.vy = v1  #29.783 * 1000
+    body1.color = 'b'
+    body1.size = 10
+    body1.name =   'Binary1'
 
-    Earth.mass =    2.29 * 10**30      #5.9742 * 10 ** 24
-    Earth.px =  -.08*AU  #-1 * AU
-    Earth.vy = 25.6 * 1000  #29.783 * 1000
-    Earth.color = 'b'
-    Earth.size = 10
-    Earth.name =   'Binary1'     #'Earth'
-
-    Venus.mass =   1.14 * 10**30    #4.8685 * 10 ** 24
-    Venus.px =   0.16 * AU   #0.723 * AU
-    Venus.vy =   -52.6 * 1000    #-35.02 * 1000
-    Venus.color = 'm'
-    Venus.size = 5
-    Venus.name =  'Binary2'   #'Venus'
+	#BODY2
+    body2.mass =   M2    #4.8685 * 10 ** 24
+    body2.px =   a2    #0.723 * AU
+    body2.vy =   -v2    #-35.02 * 1000
+    body2.color = 'm'
+    body2.size = 5
+    body2.name =  'Binary2'
 
 
-    bodies = [ Earth, Venus]
+    bodies = [ body1, body2]
     lines = [None] * len(bodies)
     fig = plt.figure(figsize=(8,8))
     ax = plt.subplot()
 
-    orbit_size = .3
-    img = plt.imread("star.png")
-    ax.imshow(img, extent=[-orbit_size, orbit_size, -orbit_size, orbit_size])
+	#CODE TO SET BACKGROUND
+    #orbit_size = .3
+    #img = plt.imread("star.png")
+    #ax.imshow(img, extent=[-orbit_size, orbit_size, -orbit_size, orbit_size])
 
     for i in range(len(bodies)):
         lines[i], = ax.plot(bodies[i].px / AU, bodies[i].py / AU,
@@ -130,6 +371,9 @@ def main():
 
     #PLOT
     plt.show()
+
+
+
 
 if __name__ == "__main__":
     main()
